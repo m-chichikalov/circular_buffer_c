@@ -2,25 +2,27 @@
  * cicle_buffer.h
  * Author: m.chichikalov@outlook.com
  */
-#ifndef CICLE_BUFFER_H_
-#define CICLE_BUFFER_H_
+#ifndef CIRCULAR_BUFFER_H
+#define CIRCULAR_BUFFER_H
 
 //*****************************************************************************
 // You should define the length of buffer in LEN_BUFFER
-#define LEN_BUFFER               256
+#define LEN_BUFFER                    8
+#ifndef TYPE_OF_ELEMENT_OF_BUFFER
+	#define TYPE_OF_ELEMENT_OF_BUFFER     int
+#endif /* TYPE_OF_ELEMENT_OF_BUFFER */
 //
 //*****************************************************************************
 
 typedef struct {
-	char buffer[LEN_BUFFER];
-	char* p_actual;
-	char* p_used;
-}cicle_buffer_t;
+	TYPE_OF_ELEMENT_OF_BUFFER buffer[LEN_BUFFER];
+	TYPE_OF_ELEMENT_OF_BUFFER* p_actual;
+	TYPE_OF_ELEMENT_OF_BUFFER* p_used;
+}circular_buffer_t;
 
-int c_b_init(cicle_buffer_t *pThis);
-void c_b_put_into(cicle_buffer_t *pThis, const char* str);
-char c_b_get_from(cicle_buffer_t *pThis);
-char* c_b_get_p_actual(cicle_buffer_t *pThis);
-char* c_b_get_p_used(cicle_buffer_t *pThis);
+int c_b_init(circular_buffer_t *);
+int c_b_put(circular_buffer_t *, TYPE_OF_ELEMENT_OF_BUFFER *);
+int c_b_put_string(circular_buffer_t *, const char*);
+TYPE_OF_ELEMENT_OF_BUFFER c_b_get_from(circular_buffer_t *);
 
-#endif /* CICLE_BUFFER_H_ */
+#endif /* CIRCULAR_BUFFER_H */
