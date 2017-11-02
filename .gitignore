@@ -1,1 +1,5 @@
 ceedling
+.settings
+.cproject
+.project
+
