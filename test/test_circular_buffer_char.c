@@ -85,17 +85,25 @@ void test_put_one_element_into_buffer(void){
 
 }
 
-//void test_make_buffer_full(void){
-//	char a = 'a';
-//	int i;
-//	for (i = 0; i < 8; i++){
-//		c_b_put(&rx_buffer, &a);
-//	}
-//	TEST_ASSERT_EQUAL_INT(
-//			-1,
-//			c_b_put(&rx_buffer, &a)
-//			);
-//}
+void test_make_buffer_full(void){
+	char a = 'a';
+
+	int free_space      = c_b_get_free_space(&rx_buffer);
+	int free_space_after = c_b_put(&rx_buffer, &a);
+	TEST_ASSERT_EQUAL_INT((free_space - 1), free_space_after);
+
+	int i = 1;
+	while((c_b_get_free_space(&rx_buffer) != 0) | (i == 10) ){
+		c_b_put(&rx_buffer, &a);
+		i++;
+	}
+	TEST_ASSERT_NOT_EQUAL(i, 10);
+	TEST_ASSERT_EQUAL_INT((LEN_BUFFER - 1), i);
+	TEST_ASSERT_EQUAL_INT(
+			-1,
+			c_b_put(&rx_buffer, &a)
+			);
+}
 
 void test_get_free_space_in_buffer(void){
 	int i;
