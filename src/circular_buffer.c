@@ -32,12 +32,14 @@ int c_b_put_string(circular_buffer_t* pThis, const TYPE_OF_ELEMENT_OF_BUFFER* st
 	return 0;
 }
 
+
 //*****************************************************************************
 int c_b_put(circular_buffer_t* pThis, TYPE_OF_ELEMENT_OF_BUFFER *pData){
-	if ((pThis->pHead + 1) == pThis->pTail)
+	int free_space_in_buffer = c_b_get_free_space(pThis);
+	if (free_space_in_buffer == 0)
 		return -1;
 	c_b_modify_buffer(pThis, pData);
-	return 0;
+	return (free_space_in_buffer - 1);
 }
 
 //*****************************************************************************
@@ -55,8 +57,6 @@ inline TYPE_OF_ELEMENT_OF_BUFFER* c_b_get_pHead(circular_buffer_t* pThis){
 inline TYPE_OF_ELEMENT_OF_BUFFER* c_b_get_pTail(circular_buffer_t* pThis){
 	return pThis->pTail;
 }
-
-
 
 //*****************************************************************************
 void c_b_move_pHead(circular_buffer_t* pThis){
