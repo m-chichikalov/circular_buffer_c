@@ -8,16 +8,16 @@ TODO - add function which return a value of free space in the buffer.
 //*****************************************************************************
 // static functions
 static void c_b_modify_buffer(circular_buffer_t *, TYPE_OF_ELEMENT_OF_BUFFER *);
-static void c_b_set_p_actual(circular_buffer_t * pThis, TYPE_OF_ELEMENT_OF_BUFFER* new_pointer);
-static void c_b_set_p_used(circular_buffer_t* pThis, TYPE_OF_ELEMENT_OF_BUFFER* new_pointer);
-// -- other I used in unit-tests. Can't declare as static.
-TYPE_OF_ELEMENT_OF_BUFFER* c_b_get_p_actual(circular_buffer_t *pThis);
-TYPE_OF_ELEMENT_OF_BUFFER* c_b_get_p_used(circular_buffer_t *pThis);
+// -- other I used in tests. Can't declare as static.
+void c_b_move_pHead(circular_buffer_t * pThis);
+void c_b_move_pTail(circular_buffer_t* pThis);
+TYPE_OF_ELEMENT_OF_BUFFER* c_b_get_pHead(circular_buffer_t *pThis);
+TYPE_OF_ELEMENT_OF_BUFFER* c_b_get_pTail(circular_buffer_t *pThis);
 
 //*****************************************************************************
 int c_b_init(circular_buffer_t* pThis){
-	pThis->p_actual = pThis->buffer;
-	pThis->p_used   = pThis->buffer;
+	pThis->pHead = pThis->buffer;
+	pThis->pTail   = pThis->buffer;
 	return 1;
 }
 
@@ -25,7 +25,7 @@ int c_b_init(circular_buffer_t* pThis){
 int c_b_put_string(circular_buffer_t* pThis, const TYPE_OF_ELEMENT_OF_BUFFER* str){
 	int i = 0;
 	do  {
-			if ((pThis->p_actual + 1) == pThis->p_used)
+			if ((pThis->pHead + 1) == pThis->pTail)
 				return -1;
 //			c_b_modify_buffer(pThis, &str[i++]);
 		} while (str[i - 1] != (TYPE_OF_ELEMENT_OF_BUFFER)0x0);
@@ -34,7 +34,7 @@ int c_b_put_string(circular_buffer_t* pThis, const TYPE_OF_ELEMENT_OF_BUFFER* st
 
 //*****************************************************************************
 int c_b_put(circular_buffer_t* pThis, TYPE_OF_ELEMENT_OF_BUFFER *pData){
-	if ((pThis->p_actual + 1) == pThis->p_used)
+	if ((pThis->pHead + 1) == pThis->pTail)
 		return -1;
 	c_b_modify_buffer(pThis, pData);
 	return 0;
@@ -42,44 +42,55 @@ int c_b_put(circular_buffer_t* pThis, TYPE_OF_ELEMENT_OF_BUFFER *pData){
 
 //*****************************************************************************
 static void c_b_modify_buffer(circular_buffer_t* pThis, TYPE_OF_ELEMENT_OF_BUFFER *pData){
-	*pThis->p_actual = *pData;
-	c_b_set_p_actual(pThis, (pThis->p_actual + 1));
+	*pThis->pHead = *pData;
+	c_b_move_pHead(pThis);
 }
 
 //*****************************************************************************
-inline TYPE_OF_ELEMENT_OF_BUFFER* c_b_get_p_actual(circular_buffer_t* pThis){
-	return pThis->p_actual;
+inline TYPE_OF_ELEMENT_OF_BUFFER* c_b_get_pHead(circular_buffer_t* pThis){
+	return pThis->pHead;
 }
 
 //*****************************************************************************
-inline TYPE_OF_ELEMENT_OF_BUFFER* c_b_get_p_used(circular_buffer_t* pThis){
-	return pThis->p_used;
+inline TYPE_OF_ELEMENT_OF_BUFFER* c_b_get_pTail(circular_buffer_t* pThis){
+	return pThis->pTail;
+}
+
+
+
+//*****************************************************************************
+void c_b_move_pHead(circular_buffer_t* pThis){
+	pThis->pHead += 1;
+	if (pThis->pHead > (pThis->buffer + (LEN_BUFFER - 1)))
+		pThis->pHead = pThis->buffer;
 }
 
 //*****************************************************************************
-void c_b_set_p_actual(circular_buffer_t* pThis, TYPE_OF_ELEMENT_OF_BUFFER* index){
-	pThis->p_actual = index;
-	if (pThis->p_actual > (pThis->buffer + (LEN_BUFFER - 1)))
-		pThis->p_actual = pThis->buffer;
-}
-
-//*****************************************************************************
-void c_b_set_p_used(circular_buffer_t* pThis, TYPE_OF_ELEMENT_OF_BUFFER* index){
-	pThis->p_used = index;
-	if (pThis->p_used > (pThis->buffer + (LEN_BUFFER - 1)))
-		pThis->p_used = pThis->buffer;
+void c_b_move_pTail(circular_buffer_t* pThis){
+	pThis->pTail += 1;
+	if (pThis->pTail > (pThis->buffer + (LEN_BUFFER - 1)))
+		pThis->pTail = pThis->buffer;
 }
 
 
 //*****************************************************************************
 TYPE_OF_ELEMENT_OF_BUFFER c_b_get_from(circular_buffer_t* pThis){
-	TYPE_OF_ELEMENT_OF_BUFFER temp = *(pThis->p_used);
-	if ((pThis->p_actual) == (pThis->p_used))
+	TYPE_OF_ELEMENT_OF_BUFFER temp = *(pThis->pTail);
+	if ((pThis->pHead) == (pThis->pTail))
 		return (TYPE_OF_ELEMENT_OF_BUFFER) 0x0;
 	else {
-		c_b_set_p_used(pThis, (pThis->p_used + 1));
+		c_b_move_pTail(pThis);
 		return temp;
 	}
+}
+
+//*****************************************************************************
+int c_b_get_free_space(circular_buffer_t* pThis){
+	int temp = ((pThis->pHead + 1 ) - pThis->pTail);
+	if (temp > 0)
+		return (LEN_BUFFER - temp);
+	else
+		return abs(temp);
 }
 
 
