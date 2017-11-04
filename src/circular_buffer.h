@@ -23,8 +23,9 @@ typedef struct {
 int c_b_init(circular_buffer_t *);
 int c_b_get_free_space(circular_buffer_t *);
 
-int c_b_put(circular_buffer_t *, TYPE_OF_ELEMENT_OF_BUFFER *);
+int c_b_put       (circular_buffer_t *, TYPE_OF_ELEMENT_OF_BUFFER *);
 int c_b_put_string(circular_buffer_t *, const TYPE_OF_ELEMENT_OF_BUFFER*);
+
 
 TYPE_OF_ELEMENT_OF_BUFFER c_b_get_from(circular_buffer_t *);
 

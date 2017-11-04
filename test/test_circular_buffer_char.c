@@ -53,22 +53,38 @@ void test_init_circular_buffer(void){
     TEST_ASSERT_EQUAL_PTR(&rx_buffer, c_b_get_pHead(&rx_buffer));
 }
 
-//void test_full_buffer(void){
-//	const char *str_to_long = "1234567897878";
-//	TEST_ASSERT_EQUAL_INT(
-//			-1,
-//			c_b_put_string(&rx_buffer, str_to_long)
-//			);
-//}
-//
-//void test_full_buffer_ok(void){
-//	const char *str_ok = "1234";
-//	TEST_ASSERT_EQUAL_INT(
-//			0,
-//			c_b_put_string(&rx_buffer, str_ok)
-//			);
-//}
-//
+void test_push_string_to_buffer_with_not_enough_space(void){
+	const char str_to_long[] = "1234567897878";
+// -- The buffer has NOT enough space (7 elements) for string str_to_long
+// -- (14 elements). Function should return -1.
+	TEST_ASSERT_EQUAL_INT(
+			-1,
+			c_b_put_string(&rx_buffer, str_to_long)
+			);
+}
+
+void test_push_string_to_buffer_with_enough_space(void){
+	const char str_ok[] = "1234";
+// -- The buffer has enough space (7 elements) for string str_ok (5 elements).
+// -- Function should return (7-5) 2 elements available in buffer after
+// -- pushing str_ok to the buffer.
+	TEST_ASSERT_EQUAL_INT(
+			2,
+			c_b_put_string(&rx_buffer, str_ok)
+			);
+}
+
+void test_verifying_pushed_string_to_buffer(void){
+	const char *str_ok = "5432";
+	c_b_put_string(&rx_buffer, str_ok);
+	int i = 0;
+	TYPE_OF_ELEMENT_OF_BUFFER temp;
+	do {
+		temp = c_b_get_from(&rx_buffer);
+		TEST_ASSERT_EQUAL_INT8(str_ok[i++], temp);
+	} while (temp != 0);
+ }
+
 void test_put_one_element_into_buffer(void){
 	char a = 'a';
 	char b = 'b';

@@ -1,13 +1,13 @@
 /*
  * cicle_buffer.c
  * Author: m.chichikalov@outlook.com
-TODO - add callback function which will execute when buffer is full.
-TODO - add function which return a value of free space in the buffer.
+TODO ??? - add callback function which will execute when buffer is full.
+DONE - add function which return a value of free space in the buffer.
  */
 #include "circular_buffer.h"
 //*****************************************************************************
 // static functions
-static void c_b_modify_buffer(circular_buffer_t *, TYPE_OF_ELEMENT_OF_BUFFER *);
+static void c_b_modify_buffer(circular_buffer_t *, const TYPE_OF_ELEMENT_OF_BUFFER *);
 // -- other I used in tests. Can't declare as static.
 void c_b_move_pHead(circular_buffer_t * pThis);
 void c_b_move_pTail(circular_buffer_t* pThis);
@@ -22,17 +22,27 @@ int c_b_init(circular_buffer_t* pThis){
 }
 
 //*****************************************************************************
+// Put string in buffer. If not enough space return -1.
+// String should be NULL determined.
+// After the data was put return available space in buffer.
+//*****************************************************************************
 int c_b_put_string(circular_buffer_t* pThis, const TYPE_OF_ELEMENT_OF_BUFFER* str){
-	int i = 0;
-	do  {
-			if ((pThis->pHead + 1) == pThis->pTail)
-				return -1;
-//			c_b_modify_buffer(pThis, &str[i++]);
-		} while (str[i - 1] != (TYPE_OF_ELEMENT_OF_BUFFER)0x0);
-	return 0;
+	int len = 0;
+	while (str[len++] != 0x0){
+	}
+	int free_space_in_buffer = c_b_get_free_space(pThis);
+	if (len > free_space_in_buffer)
+		return -1;
+	for (int i=0; i<len; i++){
+		c_b_modify_buffer(pThis, &str[i]);
+	}
+	return (free_space_in_buffer - len);
 }
 
 
+//*****************************************************************************
+// Put one element in buffer. If not enough space return -1.
+// After the data was put return available space in buffer.
 //*****************************************************************************
 int c_b_put(circular_buffer_t* pThis, TYPE_OF_ELEMENT_OF_BUFFER *pData){
 	int free_space_in_buffer = c_b_get_free_space(pThis);
@@ -43,7 +53,7 @@ int c_b_put(circular_buffer_t* pThis, TYPE_OF_ELEMENT_OF_BUFFER *pData){
 }
 
 //*****************************************************************************
-static void c_b_modify_buffer(circular_buffer_t* pThis, TYPE_OF_ELEMENT_OF_BUFFER *pData){
+static void c_b_modify_buffer(circular_buffer_t* pThis, const TYPE_OF_ELEMENT_OF_BUFFER *pData){
 	*pThis->pHead = *pData;
 	c_b_move_pHead(pThis);
 }
