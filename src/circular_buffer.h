@@ -25,7 +25,7 @@ int c_b_get_free_space(circular_buffer_t *);
 
 int c_b_put       (circular_buffer_t *, TYPE_OF_ELEMENT_OF_BUFFER *);
 int c_b_put_string(circular_buffer_t *, const TYPE_OF_ELEMENT_OF_BUFFER*);
-
+int c_b_put_mem   (circular_buffer_t *, const TYPE_OF_ELEMENT_OF_BUFFER* pointer, int len);
 
 TYPE_OF_ELEMENT_OF_BUFFER c_b_get_from(circular_buffer_t *);
 

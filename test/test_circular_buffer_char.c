@@ -139,6 +139,47 @@ void test_get_free_space_in_buffer(void){
 	TEST_ASSERT_EQUAL_PTR(&rx_buffer, c_b_get_pTail(&rx_buffer));
 }
 
+void test_put_mem_return_error(void){
+	const char arr_to_long[10] = {1, 2, 3, 4, 5,
+			                      6, 7, 8, 9, 10};
+// -- The buffer has NOT enough space (7 elements) for array
+// -- (10 elements). Function should return -1.
+	TEST_ASSERT_EQUAL_INT(
+			-1,
+			c_b_put_mem(&rx_buffer, arr_to_long, 10)
+			);
+}
+
+void test_put_mem_return_free_space(void){
+	const char  arr_ok[5] = {1, 2, 3, 4, 5};
+	const char arr1_ok[1] = {1};
+// -- The buffer has enough space (7 elements) for array
+// -- (5 and 1 elements). Function should return free space in buffer.
+	TEST_ASSERT_EQUAL_INT(
+			2,
+			c_b_put_mem(&rx_buffer, arr_ok, 5)
+			);
+	TEST_ASSERT_EQUAL_INT(
+			1,
+			c_b_put_mem(&rx_buffer, arr1_ok, 1)
+			);
+	TEST_ASSERT_EQUAL_INT(
+			0,
+			c_b_put_mem(&rx_buffer, arr1_ok, 1)
+			);
+}
+
+void test_put_mem_verifying_pushed_array_to_buffer(void){
+	const char arr_ok[5] = {15, 26, 13, 40, 195};
+	c_b_put_mem(&rx_buffer, arr_ok, 5);
+	int i = 0;
+	TYPE_OF_ELEMENT_OF_BUFFER temp;
+	do {
+		temp = c_b_get_from(&rx_buffer);
+		TEST_ASSERT_EQUAL_INT8(arr_ok[i++], temp);
+	} while (temp != 0);
+ }
+
 
 
 

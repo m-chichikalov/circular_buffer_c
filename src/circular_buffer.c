@@ -53,6 +53,20 @@ int c_b_put(circular_buffer_t* pThis, TYPE_OF_ELEMENT_OF_BUFFER *pData){
 }
 
 //*****************************************************************************
+// todo Put one element in buffer. If not enough space return -1.
+// After the data was put return available space in buffer.
+//*****************************************************************************
+int c_b_put_mem(circular_buffer_t* pThis, const TYPE_OF_ELEMENT_OF_BUFFER* pointer, int len){
+	int free_space_in_buffer = c_b_get_free_space(pThis);
+	if (len > free_space_in_buffer)
+		return -1;
+	for (int i=0; i<len; i++){
+		c_b_modify_buffer(pThis, pointer++);
+	}
+	return (free_space_in_buffer - len);
+}
+
+//*****************************************************************************
 static void c_b_modify_buffer(circular_buffer_t* pThis, const TYPE_OF_ELEMENT_OF_BUFFER *pData){
 	*pThis->pHead = *pData;
 	c_b_move_pHead(pThis);
