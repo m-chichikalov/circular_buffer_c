@@ -2,10 +2,9 @@
  *    INCLUDED FILES
  ******************************************************************************/
 //-- unity: unit test framework
-#include <stdlib.h>
+#include "test_circular_buffer_char.h"
 #include "unity.h"
 //-- module being tested
-#define TYPE_OF_ELEMENT_OF_BUFFER     char
 #include "circular_buffer.h"
 //-- other modules that need to be compiled
 //-- mocked modules
@@ -13,6 +12,7 @@
  *    DEFINITIONS
  ******************************************************************************/
 // --
+
 circular_buffer_t rx_buffer;
 
 /*******************************************************************************
@@ -179,6 +179,85 @@ void test_put_mem_verifying_pushed_array_to_buffer(void){
 		TEST_ASSERT_EQUAL_INT8(arr_ok[i++], temp);
 	} while (temp != 0);
  }
+
+///////////////////-- c_b_find_character --/////////////////////////////////////
+void test_find_character_return(){
+	const char *str_ok = "Embed";
+	c_b_put_string(&rx_buffer, str_ok);
+
+	int position = c_b_find_character(&rx_buffer, 'b');
+	TEST_ASSERT_EQUAL_INT(3, position);
+
+	position = c_b_find_character(&rx_buffer, 'E');
+	TEST_ASSERT_EQUAL_INT(1, position);
+
+	position = c_b_find_character(&rx_buffer, 'A');
+	TEST_ASSERT_EQUAL_INT(0, position);
+
+	position = c_b_find_character(&rx_buffer, 0x0);
+	TEST_ASSERT_EQUAL_INT(6, position);
+
+	char data = 0x51;
+	char* pdata = &data;
+
+	c_b_init(&rx_buffer);
+	for (int i=0; i<8; i++){
+		c_b_put(&rx_buffer, pdata);
+	}
+	TEST_ASSERT_EQUAL_INT(0, c_b_get_free_space(&rx_buffer));
+
+	position = c_b_find_character(&rx_buffer, 0x00);
+	TEST_ASSERT_EQUAL_INT(0, position);
+
+}
+
+///////////////////-- c_b_get_string --/////////////////////////////////////////
+void test_get_string_return_string(void){
+	char *str_1 = "Test!";
+	char *str_2 = "Test2!";
+	char *str;
+	char *str_;
+	int i;
+	str_ = str;
+
+	c_b_put_string(&rx_buffer, str_1);
+
+	int result = c_b_get_string(&rx_buffer, str);
+	TEST_ASSERT_EQUAL_INT(1, result);
+
+	for (i=0; i<6; i++){
+		if (*(str_1++) != *(str++))
+			TEST_FAIL_MESSAGE("not equal");
+	}
+
+	TEST_ASSERT_EQUAL_INT(7, c_b_get_free_space(&rx_buffer));
+
+	c_b_put_string(&rx_buffer, str_2);
+
+	result = c_b_get_string(&rx_buffer, str_);
+	TEST_ASSERT_EQUAL_INT(1, result);
+
+	for (i=0; i<7; i++){
+		if (*(str_1++) != *(str_++))
+			TEST_FAIL_MESSAGE("not equal");
+	}
+}
+
+
+void test_get_string_return_0(void){
+	char *str;
+	char data = 0x51;
+	char* pdata = &data;
+
+	c_b_init(&rx_buffer);
+	for (int i=0; i<8; i++){
+		c_b_put(&rx_buffer, pdata);
+	}
+	TEST_ASSERT_EQUAL_INT(0, c_b_get_free_space(&rx_buffer));
+
+	int result = c_b_get_string(&rx_buffer, str);
+	TEST_ASSERT_EQUAL_INT(0, result);
+}
 
 
 

@@ -1,35 +1,38 @@
 /*
  * cicle_buffer.c
  * Author: m.chichikalov@outlook.com
-TODO ??? - add callback function which will execute when buffer is full.
-DONE - add function which return a value of free space in the buffer.
+TODO  - What about save multi-threaded version.
+TODO  - Add test with different data type buffer.
  */
+#include <stdlib.h>
+#include <stdio.h>
 #include "circular_buffer.h"
 //*****************************************************************************
 // static functions
 static void c_b_modify_buffer(circular_buffer_t *, const TYPE_OF_ELEMENT_OF_BUFFER *);
 // -- other I used in tests. Can't declare as static.
+TYPE_OF_ELEMENT_OF_BUFFER* c_b_move_position(circular_buffer_t * pThis, TYPE_OF_ELEMENT_OF_BUFFER* pPosition);
 void c_b_move_pHead(circular_buffer_t * pThis);
 void c_b_move_pTail(circular_buffer_t* pThis);
 TYPE_OF_ELEMENT_OF_BUFFER* c_b_get_pHead(circular_buffer_t *pThis);
 TYPE_OF_ELEMENT_OF_BUFFER* c_b_get_pTail(circular_buffer_t *pThis);
 
+
 //*****************************************************************************
 int c_b_init(circular_buffer_t* pThis){
 	pThis->pHead = pThis->buffer;
-	pThis->pTail   = pThis->buffer;
+	pThis->pTail = pThis->buffer;
 	return 1;
 }
 
 //*****************************************************************************
-// Put string in buffer. If not enough space return -1.
+// Put string into buffer. If it has not enough space will return -1.
 // String should be NULL determined.
 // After the data was put return available space in buffer.
 //*****************************************************************************
 int c_b_put_string(circular_buffer_t* pThis, const TYPE_OF_ELEMENT_OF_BUFFER* str){
 	int len = 0;
-	while (str[len++] != 0x0){
-	}
+	while (str[len++] != 0x0){	}
 	int free_space_in_buffer = c_b_get_free_space(pThis);
 	if (len > free_space_in_buffer)
 		return -1;
@@ -69,8 +72,10 @@ int c_b_put_mem(circular_buffer_t* pThis, const TYPE_OF_ELEMENT_OF_BUFFER* point
 //*****************************************************************************
 static void c_b_modify_buffer(circular_buffer_t* pThis, const TYPE_OF_ELEMENT_OF_BUFFER *pData){
 	*pThis->pHead = *pData;
-	c_b_move_pHead(pThis);
+	pThis->pHead = c_b_move_position(pThis, pThis->pHead);
 }
+
+
 
 //*****************************************************************************
 inline TYPE_OF_ELEMENT_OF_BUFFER* c_b_get_pHead(circular_buffer_t* pThis){
@@ -83,29 +88,52 @@ inline TYPE_OF_ELEMENT_OF_BUFFER* c_b_get_pTail(circular_buffer_t* pThis){
 }
 
 //*****************************************************************************
+TYPE_OF_ELEMENT_OF_BUFFER* c_b_move_position(circular_buffer_t* pThis, TYPE_OF_ELEMENT_OF_BUFFER* pPosition){
+	pPosition ++;
+	if (pPosition > (pThis->buffer + (LEN_BUFFER - 1)))
+		pPosition = pThis->buffer;
+	return pPosition;
+}
+
+//*****************************************************************************
 void c_b_move_pHead(circular_buffer_t* pThis){
-	pThis->pHead += 1;
-	if (pThis->pHead > (pThis->buffer + (LEN_BUFFER - 1)))
-		pThis->pHead = pThis->buffer;
+	pThis->pHead = c_b_move_position(pThis, pThis->pHead);
 }
 
 //*****************************************************************************
 void c_b_move_pTail(circular_buffer_t* pThis){
-	pThis->pTail += 1;
-	if (pThis->pTail > (pThis->buffer + (LEN_BUFFER - 1)))
-		pThis->pTail = pThis->buffer;
+	pThis->pTail = c_b_move_position(pThis, pThis->pTail);
 }
 
 
 //*****************************************************************************
+// TODO looks terrible
 TYPE_OF_ELEMENT_OF_BUFFER c_b_get_from(circular_buffer_t* pThis){
 	TYPE_OF_ELEMENT_OF_BUFFER temp = *(pThis->pTail);
-	if ((pThis->pHead) == (pThis->pTail))
+	if ((pThis->pHead) == (pThis->pTail)) // something wrong here
 		return (TYPE_OF_ELEMENT_OF_BUFFER) 0x0;
 	else {
 		c_b_move_pTail(pThis);
 		return temp;
 	}
+}
+
+//*****************************************************************************
+// TODO definition
+int c_b_get_mem(circular_buffer_t* pThis, void* pointer,  int value){
+	return 0;
+}
+
+//*****************************************************************************
+int c_b_get_string(circular_buffer_t* pThis, char* str){
+	int pos_termination  = c_b_find_character(pThis, 0x00);
+	if (pos_termination <= 1)
+		return 0;
+	for (int i=0; i < pos_termination; i++){
+		*(str++) = *(pThis->pTail);
+		c_b_move_pTail(pThis);
+	}
+	return 1;
 }
 
 //*****************************************************************************
@@ -116,5 +144,31 @@ int c_b_get_free_space(circular_buffer_t* pThis){
 	else
 		return abs(temp);
 }
+
+//*****************************************************************************
+int c_b_find_character(circular_buffer_t* pThis, char character){
+	TYPE_OF_ELEMENT_OF_BUFFER* pTailPseudo = pThis->pTail;
+	int position = 0;
+	do {
+		position++;
+		if (*pTailPseudo == character)
+			return position;
+		pTailPseudo = c_b_move_position(pThis, pTailPseudo);
+	} while (pTailPseudo != pThis->pHead);
+	return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
