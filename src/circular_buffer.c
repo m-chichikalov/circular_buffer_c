@@ -1,8 +1,7 @@
 /*
- * cicle_buffer.c
+ * circular_buffer.c
  * Author: m.chichikalov@outlook.com
-TODO  - What about save multi-threaded version.
-TODO  - Add test with different data type buffer.
+ * TODO  - Add test with different data type buffer.
  */
 #include <stdlib.h>
 #include <stdio.h>
@@ -26,24 +25,6 @@ int c_b_init(circular_buffer_t* pThis){
 }
 
 //*****************************************************************************
-// Put string into buffer. If it has not enough space will return -1.
-// String should be NULL determined.
-// After the data was put return available space in buffer.
-//*****************************************************************************
-int c_b_put_string(circular_buffer_t* pThis, const TYPE_OF_ELEMENT_OF_BUFFER* str){
-	int len = 0;
-	while (str[len++] != 0x0){	}
-	int free_space_in_buffer = c_b_get_free_space(pThis);
-	if (len > free_space_in_buffer)
-		return -1;
-	for (int i=0; i<len; i++){
-		c_b_modify_buffer(pThis, &str[i]);
-	}
-	return (free_space_in_buffer - len);
-}
-
-
-//*****************************************************************************
 // Put one element in buffer. If not enough space return -1.
 // After the data was put return available space in buffer.
 //*****************************************************************************
@@ -53,6 +34,23 @@ int c_b_put(circular_buffer_t* pThis, TYPE_OF_ELEMENT_OF_BUFFER *pData){
 		return -1;
 	c_b_modify_buffer(pThis, pData);
 	return (free_space_in_buffer - 1);
+}
+
+//*****************************************************************************
+// Put string into buffer. If it has not enough space will return -1.
+// String should be NULL determined.
+// After the data was put return available space in buffer.
+//*****************************************************************************
+int c_b_put_string(circular_buffer_t* pThis, const char* str){
+	int len = 0;
+	while (str[len++] != 0x0){	}
+	int free_space_in_buffer = c_b_get_free_space(pThis);
+	if (len > free_space_in_buffer)
+		return -1;
+	for (int i=0; i<len; i++){
+		c_b_modify_buffer(pThis, &str[i]);
+	}
+	return (free_space_in_buffer - len);
 }
 
 //*****************************************************************************
@@ -74,8 +72,6 @@ static void c_b_modify_buffer(circular_buffer_t* pThis, const TYPE_OF_ELEMENT_OF
 	*pThis->pHead = *pData;
 	pThis->pHead = c_b_move_position(pThis, pThis->pHead);
 }
-
-
 
 //*****************************************************************************
 inline TYPE_OF_ELEMENT_OF_BUFFER* c_b_get_pHead(circular_buffer_t* pThis){
@@ -107,21 +103,24 @@ void c_b_move_pTail(circular_buffer_t* pThis){
 
 
 //*****************************************************************************
-// TODO looks terrible
-TYPE_OF_ELEMENT_OF_BUFFER c_b_get_from(circular_buffer_t* pThis){
+// TODO now better!
+TYPE_OF_ELEMENT_OF_BUFFER c_b_get(circular_buffer_t* pThis){
 	TYPE_OF_ELEMENT_OF_BUFFER temp = *(pThis->pTail);
-	if ((pThis->pHead) == (pThis->pTail)) // something wrong here
-		return (TYPE_OF_ELEMENT_OF_BUFFER) 0x0;
-	else {
+	if (c_b_get_free_space(pThis) != (LEN_BUFFER - 1))
 		c_b_move_pTail(pThis);
-		return temp;
-	}
+	return temp;
 }
 
 //*****************************************************************************
 // TODO definition
-int c_b_get_mem(circular_buffer_t* pThis, void* pointer,  int value){
-	return 0;
+int c_b_get_mem(circular_buffer_t* pThis, TYPE_OF_ELEMENT_OF_BUFFER* pointer,  int value){
+	int size = ((LEN_BUFFER - 1) - c_b_get_free_space(pThis));
+	if (size < value)
+		return 0;
+	for (int i=0; i<value; i++){
+		*(pointer++) = c_b_get(pThis);
+	}
+	return 1;
 }
 
 //*****************************************************************************

@@ -1,8 +1,6 @@
 /*
  * test_circular_buffer_char.h
- *
- *  Created on: 5 нояб. 2017 г.
- *      Author: user
+ *      Author: m.chichikalov@outlook.com
  */
 
 #ifndef TEST_TEST_CIRCULAR_BUFFER_CHAR_H_

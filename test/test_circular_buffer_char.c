@@ -53,6 +53,7 @@ void test_init_circular_buffer(void){
     TEST_ASSERT_EQUAL_PTR(&rx_buffer, c_b_get_pHead(&rx_buffer));
 }
 
+//////////////////////-- c_b_put_string --/////////////////////////////////////
 void test_push_string_to_buffer_with_not_enough_space(void){
 	const char str_to_long[] = "1234567897878";
 // -- The buffer has NOT enough space (7 elements) for string str_to_long
@@ -80,7 +81,7 @@ void test_verifying_pushed_string_to_buffer(void){
 	int i = 0;
 	TYPE_OF_ELEMENT_OF_BUFFER temp;
 	do {
-		temp = c_b_get_from(&rx_buffer);
+		temp = c_b_get(&rx_buffer);
 		TEST_ASSERT_EQUAL_INT8(str_ok[i++], temp);
 	} while (temp != 0);
  }
@@ -92,15 +93,16 @@ void test_put_one_element_into_buffer(void){
 	c_b_put(&rx_buffer, &b);
 	TEST_ASSERT_EQUAL_INT8(
 			a,
-			c_b_get_from(&rx_buffer)
+			c_b_get(&rx_buffer)
 			);
 	TEST_ASSERT_EQUAL_INT8(
 			b,
-			c_b_get_from(&rx_buffer)
+			c_b_get(&rx_buffer)
 			);
 
 }
 
+//////////////////////-- c_b_free_space --/////////////////////////////////////
 void test_make_buffer_full(void){
 	char a = 'a';
 
@@ -139,6 +141,7 @@ void test_get_free_space_in_buffer(void){
 	TEST_ASSERT_EQUAL_PTR(&rx_buffer, c_b_get_pTail(&rx_buffer));
 }
 
+/////////////////////////-- c_b_put_mem --/////////////////////////////////////
 void test_put_mem_return_error(void){
 	const char arr_to_long[10] = {1, 2, 3, 4, 5,
 			                      6, 7, 8, 9, 10};
@@ -173,11 +176,9 @@ void test_put_mem_verifying_pushed_array_to_buffer(void){
 	const char arr_ok[5] = {15, 26, 13, 40, 195};
 	c_b_put_mem(&rx_buffer, arr_ok, 5);
 	int i = 0;
-	TYPE_OF_ELEMENT_OF_BUFFER temp;
-	do {
-		temp = c_b_get_from(&rx_buffer);
-		TEST_ASSERT_EQUAL_INT8(arr_ok[i++], temp);
-	} while (temp != 0);
+	for (i=0; i<5; i++){
+		TEST_ASSERT_EQUAL_INT8(arr_ok[i], c_b_get(&rx_buffer));
+	}
  }
 
 ///////////////////-- c_b_find_character --/////////////////////////////////////
@@ -243,7 +244,6 @@ void test_get_string_return_string(void){
 	}
 }
 
-
 void test_get_string_return_0(void){
 	char *str;
 	char data = 0x51;
@@ -259,8 +259,33 @@ void test_get_string_return_0(void){
 	TEST_ASSERT_EQUAL_INT(0, result);
 }
 
+///////////////////-- c_b_get_string --/////////////////////////////////////////
+void test_get_mem_return_error(void){
+	char mem[10];
+	int result = c_b_get_mem(&rx_buffer, mem, 10);
+	TEST_ASSERT_EQUAL_INT(0, result);
+}
 
+void test_get_mem_return_ok(void){
+	char mem[7];
+	c_b_put_string(&rx_buffer, "1234");
+	int result = c_b_get_mem(&rx_buffer, mem, 5);
+	TEST_ASSERT_EQUAL_INT(1, result);
 
+	c_b_put_string(&rx_buffer, "123456");
+	result = c_b_get_mem(&rx_buffer, mem, 7);
+	TEST_ASSERT_EQUAL_INT(1, result);
+}
+
+void test_get_mem_verifying_pulled_array_from_buffer(void){
+	const char arr_ok[7] = {55, 126, 143, 40, 95, 0, 4};
+	char  arr_veryfing[7];
+	c_b_put_mem(&rx_buffer, arr_ok, 7);
+	c_b_get_mem(&rx_buffer, arr_veryfing, 7);
+	for (int i=0; i<7; i++){
+		TEST_ASSERT_EQUAL_INT8(arr_ok[i], arr_veryfing[i]);
+	}
+ }
 
 
 

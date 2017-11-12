@@ -7,14 +7,13 @@
 
 //*****************************************************************************
 // You should define the length of buffer in LEN_BUFFER
-#define LEN_BUFFER                    8
-#ifdef TEST_CHAR
+#ifndef LEN_BUFFER
+	#define LEN_BUFFER                    8
+#endif /* LEN_BUFFER */
+#ifndef TYPE_OF_ELEMENT_OF_BUFFER
 	#define TYPE_OF_ELEMENT_OF_BUFFER     char
-#elif  TEST_INT
-	#define TYPE_OF_ELEMENT_OF_BUFFER     int
-#else
-	#define TYPE_OF_ELEMENT_OF_BUFFER     int
 #endif /* TYPE_OF_ELEMENT_OF_BUFFER */
+
 
 //*****************************************************************************
 
@@ -65,7 +64,7 @@ int c_b_put_mem   (circular_buffer_t* buf, const TYPE_OF_ELEMENT_OF_BUFFER* poin
 /*
  * Read 1 element from the ring buffer.
  */
-TYPE_OF_ELEMENT_OF_BUFFER c_b_get_from(circular_buffer_t* buf);
+TYPE_OF_ELEMENT_OF_BUFFER c_b_get(circular_buffer_t* buf);
 
 /*
  * Read string from the ring buffer.
@@ -73,5 +72,9 @@ TYPE_OF_ELEMENT_OF_BUFFER c_b_get_from(circular_buffer_t* buf);
  */
 int c_b_get_string(circular_buffer_t* buf, char* str);
 
-
+/*
+ * Copy n (bytes) from the ring buffer into memory.
+ *
+ */
+int c_b_get_mem(circular_buffer_t* pThis, TYPE_OF_ELEMENT_OF_BUFFER* pointer,  int value);
 #endif /* CIRCULAR_BUFFER_H */
