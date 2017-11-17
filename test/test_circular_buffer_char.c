@@ -216,7 +216,7 @@ void test_find_character_return(){
 void test_get_string_return_string(void){
 	char *str_1 = "Test!";
 	char *str_2 = "Test2!";
-	char *str;
+	char str[10];
 	char *str_;
 	int i;
 	str_ = str;
@@ -227,7 +227,7 @@ void test_get_string_return_string(void){
 	TEST_ASSERT_EQUAL_INT(1, result);
 
 	for (i=0; i<6; i++){
-		if (*(str_1++) != *(str++))
+		if (*(str_1++) != str[i])
 			TEST_FAIL_MESSAGE("not equal");
 	}
 
@@ -245,7 +245,7 @@ void test_get_string_return_string(void){
 }
 
 void test_get_string_return_0(void){
-	char *str;
+	char str[10];
 	char data = 0x51;
 	char* pdata = &data;
 
