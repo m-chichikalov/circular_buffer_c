@@ -1,8 +1,8 @@
 /*******************************************************************************
  *    INCLUDED FILES
  ******************************************************************************/
+#include "test_circular_buffer_int.h"
 //-- unity: unit test framework
-#include "test_circular_buffer_char.h"
 #include "unity.h"
 //-- module being tested
 #include "circular_buffer.h"
@@ -12,6 +12,7 @@
  *    DEFINITIONS
  ******************************************************************************/
 // --
+
 circular_buffer_t rx_buffer;
 
 /*******************************************************************************
@@ -77,12 +78,14 @@ void test_push_string_to_buffer_with_enough_space(void){
 void test_verifying_pushed_string_to_buffer(void){
 	const char *str_ok = "5432";
 	c_b_put_string(&rx_buffer, str_ok);
-	int i = 0;
+	TYPE_OF_ELEMENT_OF_BUFFER i = 0;
 	TYPE_OF_ELEMENT_OF_BUFFER temp;
 	do {
 		temp = c_b_get(&rx_buffer);
-		TEST_ASSERT_EQUAL_INT8(str_ok[i++], temp);
-	} while (temp != 0);
+//		printf("expected - %d ", str_ok[i]);
+//		printf(";was - %d\r", (char)temp);
+		TEST_ASSERT_EQUAL(str_ok[i++], (char)temp);
+	} while ((char)temp != 0);
  }
 
 void test_put_one_element_into_buffer(void){
@@ -92,24 +95,24 @@ void test_put_one_element_into_buffer(void){
 	c_b_put(&rx_buffer, &b);
 	TEST_ASSERT_EQUAL_INT8(
 			a,
-			c_b_get(&rx_buffer)
+			(char)c_b_get(&rx_buffer)
 			);
 	TEST_ASSERT_EQUAL_INT8(
 			b,
-			c_b_get(&rx_buffer)
+			(char)c_b_get(&rx_buffer)
 			);
 
 }
 
-//////////////////////-- c_b_free_space --/////////////////////////////////////
+////////////////////////-- c_b_free_space --/////////////////////////////////////
 void test_make_buffer_full(void){
 	char a = 'a';
 
-	int free_space      = c_b_get_free_space(&rx_buffer);
-	int free_space_after = c_b_put(&rx_buffer, &a);
+	TYPE_OF_ELEMENT_OF_BUFFER free_space      = c_b_get_free_space(&rx_buffer);
+	TYPE_OF_ELEMENT_OF_BUFFER free_space_after = c_b_put(&rx_buffer, &a);
 	TEST_ASSERT_EQUAL_INT((free_space - 1), free_space_after);
 
-	int i = 1;
+	TYPE_OF_ELEMENT_OF_BUFFER i = 1;
 	while((c_b_get_free_space(&rx_buffer) != 0) | (i == 10) ){
 		c_b_put(&rx_buffer, &a);
 		i++;
@@ -123,7 +126,7 @@ void test_make_buffer_full(void){
 }
 
 void test_get_free_space_in_buffer(void){
-	int i;
+	TYPE_OF_ELEMENT_OF_BUFFER i;
 	// -- Empty buffer is able to take (LEN_BUFFER-1) elements.
 	TEST_ASSERT_EQUAL_INT((LEN_BUFFER-1), c_b_get_free_space(&rx_buffer));
 	for (i=0; i<5; i++){
@@ -140,9 +143,9 @@ void test_get_free_space_in_buffer(void){
 	TEST_ASSERT_EQUAL_PTR(&rx_buffer, c_b_get_pTail(&rx_buffer));
 }
 
-/////////////////////////-- c_b_put_mem --/////////////////////////////////////
+///////////////////////////-- c_b_put_mem --/////////////////////////////////////
 void test_put_mem_return_error(void){
-	char arr_to_long[10] = {1, 2, 3, 4, 5,
+	TYPE_OF_ELEMENT_OF_BUFFER arr_to_long[10] = {1, 2, 3, 4, 5,
 			                      6, 7, 8, 9, 10};
 // -- The buffer has NOT enough space (7 elements) for array
 // -- (10 elements). Function should return -1.
@@ -153,8 +156,8 @@ void test_put_mem_return_error(void){
 }
 
 void test_put_mem_return_free_space(void){
-	char  arr_ok[5] = {1, 2, 3, 4, 5};
-	char arr1_ok[1] = {1};
+	TYPE_OF_ELEMENT_OF_BUFFER  arr_ok [5] = {1, 2, 3, 4, 5};
+	TYPE_OF_ELEMENT_OF_BUFFER  arr1_ok[1] = {1};
 // -- The buffer has enough space (7 elements) for array
 // -- (5 and 1 elements). Function should return free space in buffer.
 	TEST_ASSERT_EQUAL_INT(
@@ -172,15 +175,16 @@ void test_put_mem_return_free_space(void){
 }
 
 void test_put_mem_verifying_pushed_array_to_buffer(void){
-	char arr_ok[5] = {15, 26, 13, 40, 195};
-	c_b_put_mem(&rx_buffer, arr_ok, 5);
+	TYPE_OF_ELEMENT_OF_BUFFER arr_ok[5] = {15, 26, 13, 40, 195};
 	int i = 0;
+	c_b_put_mem(&rx_buffer, arr_ok, 5);
 	for (i=0; i<5; i++){
-		TEST_ASSERT_EQUAL_INT8(arr_ok[i], c_b_get(&rx_buffer));
+		TYPE_OF_ELEMENT_OF_BUFFER temp = c_b_get(&rx_buffer);
+		TEST_ASSERT_EQUAL_INT(arr_ok[i], temp);
 	}
  }
 
-///////////////////-- c_b_find_character --/////////////////////////////////////
+/////////////////////-- c_b_find_character --/////////////////////////////////////
 void test_find_character_return(){
 	const char *str_ok = "Embed";
 	c_b_put_string(&rx_buffer, str_ok);
@@ -211,7 +215,7 @@ void test_find_character_return(){
 
 }
 
-///////////////////-- c_b_get_string --/////////////////////////////////////////
+/////////////////////-- c_b_get_string --/////////////////////////////////////////
 void test_get_string_return_string(void){
 	char *str_1 = "Test!";
 	char *str_2 = "Test2!";
@@ -258,15 +262,15 @@ void test_get_string_return_0(void){
 	TEST_ASSERT_EQUAL_INT(0, result);
 }
 
-///////////////////-- c_b_get_string --/////////////////////////////////////////
+/////////////////////-- c_b_get_mem --/////////////////////////////////////////
 void test_get_mem_return_error(void){
-	char mem[10];
+	TYPE_OF_ELEMENT_OF_BUFFER mem[10];
 	int result = c_b_get_mem(&rx_buffer, mem, 10);
 	TEST_ASSERT_EQUAL_INT(0, result);
 }
 
 void test_get_mem_return_ok(void){
-	char mem[7];
+	TYPE_OF_ELEMENT_OF_BUFFER mem[7];
 	c_b_put_string(&rx_buffer, "1234");
 	int result = c_b_get_mem(&rx_buffer, mem, 5);
 	TEST_ASSERT_EQUAL_INT(1, result);
@@ -277,12 +281,13 @@ void test_get_mem_return_ok(void){
 }
 
 void test_get_mem_verifying_pulled_array_from_buffer(void){
-	char arr_ok[7] = {55, 126, 143, 40, 95, 0, 4};
-	char  arr_veryfing[7];
+	TYPE_OF_ELEMENT_OF_BUFFER arr_ok[7] = {55, 126, 143, 40, 95, 0, 4};
+	TYPE_OF_ELEMENT_OF_BUFFER arr_veryfing[7];
+	TYPE_OF_ELEMENT_OF_BUFFER temp = 0;
 	c_b_put_mem(&rx_buffer, arr_ok, 7);
 	c_b_get_mem(&rx_buffer, arr_veryfing, 7);
 	for (int i=0; i<7; i++){
-		TEST_ASSERT_EQUAL_INT8(arr_ok[i], arr_veryfing[i]);
+		TEST_ASSERT_EQUAL_INT(arr_ok[i], arr_veryfing[i]);
 	}
  }
 
